@@ -1,0 +1,34 @@
+
+version: '2'
+
+services:
+  pg-master:
+    build: '.'
+    image: 'danieldent/postgres-replication'
+    restart: 'always'
+    command: ["postgres", "-c", "log_statement=all", "-c", "log_destination=stderr"]
+    environment:
+      POSTGRES_USER: 'docker'
+      POSTGRES_PASSWORD: 'docker'
+      PGDATA: '/var/lib/postgresql/data/pgdata'
+    volumes:
+     - './docker_data/pgsql/data:/var/lib/postgresql/data'
+    ports:
+     - '0.0.0.0:4012:5432'
+
+  pg-slave:
+    build: '.'
+    image: 'danieldent/postgres-replication'
+    restart: 'always'
+    command: ["postgres", "-c", "log_statement=all", "-c", "log_destination=stderr"]
+    environment:
+      POSTGRES_USER: 'docker'
+      POSTGRES_PASSWORD: 'docker'
+      PGDATA: '/var/lib/postgresql/data/pgdata'
+      REPLICATE_FROM: 'pg-master'
+    volumes:
+     - '/var/lib/postgresql/data'
+    ports:
+     - '0.0.0.0:4013:5432'
+    links:
+     - 'pg-master'
